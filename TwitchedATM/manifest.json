@@ -1,0 +1,10 @@
+﻿{
+  "Name": "TwitchedATM",
+  "Author": "fhajji",
+  "Version": "0.0.1",
+  "Description": "A Stardew Valley ATM with Twitch Integration",
+  "UniqueID": "fhajji.TwitchedATM",
+  "EntryDLL": "TwitchedATM.dll",
+  "MinimumApiVersion": "3.0.0",
+  "UdpateKeys": []
+}
