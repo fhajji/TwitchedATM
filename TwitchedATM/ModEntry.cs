@@ -10,10 +10,14 @@ namespace TwitchedATM
     // <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
+        private TwitchBot twitchBot;
+
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            twitchBot = new TwitchBot(this);
+
             // react to key presses
             helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
@@ -21,7 +25,7 @@ namespace TwitchedATM
             helper.ConsoleCommands.Add("atm_addmoney", "Add to the player's money.\n\nUsage: atm_addmoney <value>\n- value: the integer amount.", this.AddMoney);
         }
 
-        /// <summary>Raised after the player presses a button on the keyboard, controlle, or mouse.</summary>
+        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -47,9 +51,7 @@ namespace TwitchedATM
             int additionalMoney = int.Parse(args[0]);
             Game1.player.Money = currentMoney + additionalMoney;
             if (additionalMoney > 0)
-                Game1.player.totalMoneyEarned += (uint)additionalMoney;
-            // XXX what do we do if money is subtracted?
-            // XXX can money get negative?
+                Game1.player.totalMoneyEarned += (uint)additionalMoney;            
         }
     }
 }
