@@ -10,7 +10,7 @@ namespace TwitchedATM
     // <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
-        /// <summary>Tnhe mod entry point, called after the mod is first loaded.</summary>
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
@@ -28,6 +28,10 @@ namespace TwitchedATM
 
             // print button presses to the console window
             this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
+
+            // Display current G-money when 'G' is pressed
+            if (e.Button.ToString() == "G")
+                this.Monitor.Log($"Current balance: {Game1.player.Money}. Total earned: {Game1.player.totalMoneyEarned}", LogLevel.Debug);
         }
     }
 }
