@@ -14,7 +14,11 @@ namespace TwitchedATM
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            // react to key presses
             helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+            // cheater console command to add to player's money
+            helper.ConsoleCommands.Add("atm_addmoney", "Add to the player's money.\n\nUsage: atm_addmoney <value>\n- value: the integer amount.", this.AddMoney);
         }
 
         /// <summary>Raised after the player presses a button on the keyboard, controlle, or mouse.</summary>
@@ -32,6 +36,20 @@ namespace TwitchedATM
             // Display current G-money when 'G' is pressed
             if (e.Button.ToString() == "G")
                 this.Monitor.Log($"Current balance: {Game1.player.Money}. Total earned: {Game1.player.totalMoneyEarned}", LogLevel.Debug);
+        }
+
+        /// <summary>Add to the player's money when the atm_addmoney command is invoked.</summary>
+        /// <param name="command">atm_addmoney.</param>
+        /// <param name="args">integer representing the money to add (can be negative too).</param>
+        private void AddMoney(string command, string[] args)
+        {
+            int currentMoney = Game1.player.Money;
+            int additionalMoney = int.Parse(args[0]);
+            Game1.player.Money = currentMoney + additionalMoney;
+            if (additionalMoney > 0)
+                Game1.player.totalMoneyEarned += (uint)additionalMoney;
+            // XXX what do we do if money is subtracted?
+            // XXX can money get negative?
         }
     }
 }
