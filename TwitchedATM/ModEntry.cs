@@ -32,19 +32,19 @@ namespace TwitchedATM
             // react to key presses
             // helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
-            // cheater console command to add to player's money (FED, central bank function, minting money out of thin air)
+            // cheater SMAPI console command to add to player's money (FED, central bank function, minting money out of thin air)
             helper.ConsoleCommands.Add("atm_deposit_cheat", $"Add to the player's money.\n\nUsage: atm_deposit_cheat <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {CHEATER})", this.CommandDepositCheat);
 
-            // cheater console command to add to player's money (FED, central bank function, minting money out of thin air)
-            helper.ConsoleCommands.Add("atm_deposit", $"Add to the player's money.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {SELF})", this.CommandDeposit);
+            // SMAPI console command to deposit player's money or (simulated) Twitch bits in the account (honest function).
+            helper.ConsoleCommands.Add("atm_deposit", $"Deposit player's money or (simulated) Twitch bits into account.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {SELF})", this.CommandDeposit);
 
-            // console command to withdraw funds from account and add them to player's money
+            // SMAPI console command to withdraw money from account and add it to player's money
             helper.ConsoleCommands.Add("atm_withdraw", "Move money from account into player's money.", this.CommandWithdraw);
 
-            // console command to display current account activity on the SMAPI console
+            // SMAPI console command to display current account activity on the SMAPI console
             helper.ConsoleCommands.Add("atm_activity_current", "Show current account activity.", this.CommandCurrentActivity);
 
-            // console command to display total (summed) account activity on the SMAPI console
+            // SMAPI console command to display total (summed) account activity on the SMAPI console
             helper.ConsoleCommands.Add("atm_activity_total", "Show total (summed) account activity.", this.CommandTotalActivity);
         }
 
