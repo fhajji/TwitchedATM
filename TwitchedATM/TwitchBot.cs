@@ -69,10 +69,8 @@ namespace TwitchedATM
 
             if (BitsAmount > 0)
             {
-                sv.Monitor.Log($"Cheers! {BitsSender} sent {BitsAmount} bits.", StardewModdingAPI.LogLevel.Debug);
-
-                // XXX add them as G-money to (main player, or the atm balance).
-                StardewValley.Game1.player.Money += BitsAmount;
+                // User BitsSender sent BitsAmount bits. Add them to the player's funds.
+                sv.Deposit(BitsSender, BitsAmount);
             }
 
             // DEBUG - Display ALL chat messages in SMAPI console. Comment out before making a release.
