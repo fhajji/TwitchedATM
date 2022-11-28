@@ -10,10 +10,7 @@ namespace TwitchedATM
     // <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
-        private readonly double INTEREST_RATE = 0.06; // 6 percent per SV-anno for deposits.
-
-        private readonly string SELF = "__SELF__"; // player deposits money he/she owns(!) into account.
-        private readonly string CHEATER = "__FED__"; // player creates money out of thin air and deposits it into account.
+        static Config config;
 
         private Account account;
         // private TwitchBot twitchBot;
@@ -22,7 +19,10 @@ namespace TwitchedATM
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            account = new Account(this, INTEREST_RATE);
+            config = helper.ReadConfig<Config>();
+            helper.WriteConfig(config);
+
+            account = new Account(this, config);
 
             // At the end of each day, update account (with interests)
             helper.Events.GameLoop.DayEnding += OnNewDay;
@@ -42,10 +42,10 @@ namespace TwitchedATM
                  */
 
                 // cheater SMAPI console command to add to player's money (FED, central bank function, minting money out of thin air)
-                helper.ConsoleCommands.Add("atm_deposit_cheat", $"Add to the player's money.\n\nUsage: atm_deposit_cheat <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {CHEATER})", this.CommandDepositCheat);
+                helper.ConsoleCommands.Add("atm_deposit_cheat", $"Add to the player's money.\n\nUsage: atm_deposit_cheat <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.CHEATER})", this.CommandDepositCheat);
 
                 // SMAPI console command to deposit player's money or (simulated) Twitch bits in the account (honest function).
-                helper.ConsoleCommands.Add("atm_deposit", $"Deposit player's money or (simulated) Twitch bits into account.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {SELF})", this.CommandDeposit);
+                helper.ConsoleCommands.Add("atm_deposit", $"Deposit player's money or (simulated) Twitch bits into account.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.SELF})", this.CommandDeposit);
 
                 // SMAPI console command to withdraw money from account and add it to player's money
                 helper.ConsoleCommands.Add("atm_withdraw", "Move money from account into player's money.", this.CommandWithdraw);
@@ -90,7 +90,7 @@ namespace TwitchedATM
                 return;
 
             int amount = int.Parse(args[0]);
-            account.Deposit(args.Length == 2 ? args[1] : CHEATER, amount);
+            account.Deposit(args.Length == 2 ? args[1] : config.CHEATER, amount);
         }
 
         /// <summary>Add to the player's money when the atm_deposit command is invoked in the SMAPI console (honest version).\n  The amount to deposit comes either from Twitch bits when depositor is not {SELF},\n  or from player's money when depositor is {SELF}.\n  If it comes from player's money, it can't be more than that.</summary>
@@ -105,16 +105,16 @@ namespace TwitchedATM
             int amount = int.Parse(args[0]);
             if (amount <= 0) return;
 
-            string depositor = args.Length == 2 ? args[1] : SELF;
+            string depositor = args.Length == 2 ? args[1] : config.SELF;
 
-            if (depositor == SELF)
+            if (depositor == config.SELF)
             {
                 // Non-cheating command. Player can only deposit up to available Player's money, and that amount is subtracted from Player's money.
                 int amountToDeposit = Math.Min(amount, Game1.player.Money);
                 {
                     // Too bad this can't be an atomic transaction, actually.
                     Game1.player.Money -= amountToDeposit;
-                    account.Deposit(SELF, amountToDeposit);
+                    account.Deposit(config.SELF, amountToDeposit);
                 }
                 
             }

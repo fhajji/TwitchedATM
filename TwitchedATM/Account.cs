@@ -11,26 +11,20 @@ namespace TwitchedATM
         private readonly Dictionary<string, int> Ledger;
         private readonly Dictionary<string, int> PermanentLedger;
 
-        private static readonly string WITHDRAWALS = "WITHDRAWALS";
-        private static readonly string INTERESTS = "INTERESTS";
-        private static readonly int DAYS_PER_YEAR = 4 * 28; // 28 days per SV season.
-
-        double depositInterestRate = 0;
-
         ModEntry sv; // links back to Stardew Valley TwitchedATM mod.
+        Config config; // from default.json
 
-        public Account(ModEntry sv, double depositInterestRate = 0)
+        public Account(ModEntry sv, Config config)
         {
             this.sv = sv;
+            this.config = config;
 
             Ledger = new Dictionary<string, int>();
 
             // Permanent record of all (summed) deposits and withdrawals.
             PermanentLedger = new Dictionary<string, int>();
-            PermanentLedger[WITHDRAWALS] = 0;
-            PermanentLedger[INTERESTS] = 0;
-
-            this.depositInterestRate = depositInterestRate;
+            PermanentLedger[config.WITHDRAWALS] = 0;
+            PermanentLedger[config.INTERESTS] = 0;
         }
 
         public void Deposit(string from, int amount)
@@ -59,7 +53,7 @@ namespace TwitchedATM
         {
             int total = Balance();
             Ledger.Clear();
-            PermanentLedger[WITHDRAWALS] -= total;
+            PermanentLedger[config.WITHDRAWALS] -= total;
             // Important: Don't clear PermanentLedger
 
             sv.Monitor.Log($"Withdraw(): {total}", StardewModdingAPI.LogLevel.Debug);
@@ -96,10 +90,10 @@ namespace TwitchedATM
         /// <summary>Add interests of previous day. Ticks every day. Connected in owner of this class to the game.</summary>
         public void OnNewDay()
         {
-            if (depositInterestRate > 0)
+            if (config.DepositInterestRate > 0)
             {
-                int interestDay = (int)Math.Floor((Balance() * depositInterestRate) / DAYS_PER_YEAR);
-                Deposit(INTERESTS, interestDay);
+                int interestDay = (int)Math.Floor((Balance() * config.DepositInterestRate) / config.DAYS_PER_YEAR);
+                Deposit(config.INTERESTS, interestDay);
             }
         }
     }

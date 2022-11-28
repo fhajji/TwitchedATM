@@ -20,17 +20,30 @@ namespace TwitchedATM
          * 
          * IMPORTANT: Don't write the access token directly into the source code,
          * as it may inadvertently land in a public (GitHub) repository!
+         * 
+         * Alternatively, edit config.json in the Mods/TwitchedATM folder.
          */
-        static readonly string TWITCHEDATM_BOT_NAME = Environment.GetEnvironmentVariable("TWITCHEDATM_BOT_NAME") ?? "<your_bot_name>";
-        static readonly string TWITCHEDATM_ACCESS_TOKEN = Environment.GetEnvironmentVariable("TWITCHEDATM_ACCESS_TOKEN") ?? "<your_bots_access_token>";
-        static readonly string TWITCHEDATM_CHANNEL_NAME = Environment.GetEnvironmentVariable("TWITCHEDATM_CHANNEL_NAME") ?? "<channel_to_join_and_monitor>";
+        string TWITCHEDATM_BOT_NAME;
+        string TWITCHEDATM_ACCESS_TOKEN;
+        string TWITCHEDATM_CHANNEL_NAME;
 
         TwitchClient client;
         ModEntry sv; // links back to Stardew Valley TwitchedATM mod.
+        Config config;
 
-        public TwitchBot(ModEntry sv)
+        public TwitchBot(ModEntry sv, Config config)
         {
             this.sv = sv;
+            this.config = config;
+
+            /*
+             * Get Twitch integration configuration
+             *   - first from environment variables
+             *   - second from default config (if env variables are not set)
+             */
+            TWITCHEDATM_BOT_NAME = Environment.GetEnvironmentVariable("TWITCHEDATM_BOT_NAME") ?? config.TWITCHED_ATM_BOT_NAME;
+            TWITCHEDATM_ACCESS_TOKEN = Environment.GetEnvironmentVariable("TWITCHEDATM_ACCESS_TOKEN") ?? config.TWITCHED_ATM_ACCESS_TOKEN;
+            TWITCHEDATM_CHANNEL_NAME = Environment.GetEnvironmentVariable("TWITCHEDATM_CHANNEL_NAME") ?? config.TWITCHED_ATM_CHANNEL_NAME;
 
             sv.Monitor.Log($"About to connect to {TWITCHEDATM_CHANNEL_NAME} as {TWITCHEDATM_BOT_NAME}.", StardewModdingAPI.LogLevel.Debug);
 
@@ -47,6 +60,7 @@ namespace TwitchedATM
             client.OnMessageReceived += OnMessageReceived;
 
             client.Connect();
+            this.config = config;
         }
 
         private void OnConnected(object sender, OnConnectedArgs e)
