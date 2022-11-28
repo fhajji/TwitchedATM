@@ -8,8 +8,7 @@ namespace TwitchedATM
 {
     public class Account
     {
-        private readonly Dictionary<string, int> Ledger;
-        private readonly Dictionary<string, int> PermanentLedger;
+        private readonly AccountState state;
 
         ModEntry sv; // links back to Stardew Valley TwitchedATM mod.
         Config config; // from default.json
@@ -18,32 +17,30 @@ namespace TwitchedATM
         {
             this.sv = sv;
             this.config = config;
+            state = new AccountState();
 
-            Ledger = new Dictionary<string, int>();
-
-            // Permanent record of all (summed) deposits and withdrawals.
-            PermanentLedger = new Dictionary<string, int>();
-            PermanentLedger[config.WITHDRAWALS] = 0;
-            PermanentLedger[config.INTERESTS] = 0;
+            state = new AccountState();
+            state.PermanentLedger[config.WITHDRAWALS] = 0;
+            state.PermanentLedger[config.INTERESTS] = 0;
         }
 
         public void Deposit(string from, int amount)
         {
-            if (Ledger.ContainsKey(from))
+            if (state.Ledger.ContainsKey(from))
             {
-                Ledger[from] += amount;
+                state.Ledger[from] += amount;
             } else
             {
-                Ledger[from] = amount;
+                state.Ledger[from] = amount;
             }
 
-            if (PermanentLedger.ContainsKey(from))
+            if (state.PermanentLedger.ContainsKey(from))
             {
-                PermanentLedger[from] += amount;
+                state.PermanentLedger[from] += amount;
             }
             else
             {
-                PermanentLedger[from] = amount;
+                state.PermanentLedger[from] = amount;
             }
 
             sv.Monitor.Log($"Deposit({from}, {amount})", StardewModdingAPI.LogLevel.Debug);
@@ -52,8 +49,8 @@ namespace TwitchedATM
         public int Withdraw()
         {
             int total = Balance();
-            Ledger.Clear();
-            PermanentLedger[config.WITHDRAWALS] -= total;
+            state.Ledger.Clear();
+            state.PermanentLedger[config.WITHDRAWALS] -= total;
             // Important: Don't clear PermanentLedger
 
             sv.Monitor.Log($"Withdraw(): {total}", StardewModdingAPI.LogLevel.Debug);
@@ -64,14 +61,14 @@ namespace TwitchedATM
         public string CurrentActivity()
         {
             var opt = new JsonSerializerOptions() {  WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(Ledger, opt);
+            string strJson = JsonSerializer.Serialize(state.Ledger, opt);
             return strJson;
         }
 
         public string TotalActivity()
         {
             var opt = new JsonSerializerOptions { WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(PermanentLedger, opt);
+            string strJson = JsonSerializer.Serialize(state.PermanentLedger, opt);
             return strJson;
         }
 
@@ -80,7 +77,7 @@ namespace TwitchedATM
         public int Balance()
         {
             int total = 0;
-            foreach(KeyValuePair<string, int> pair in Ledger)
+            foreach(KeyValuePair<string, int> pair in state.Ledger)
             {
                 total += pair.Value;
             }
