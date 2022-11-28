@@ -106,12 +106,16 @@ namespace TwitchedATM
                     Game1.player.Money -= amountToDeposit;
                     account.Deposit(SELF, amountToDeposit);
                 }
-
-            } else
+                
+            }
+            else
             {
                 // Everyone else contributed bits (evtl. simulated), so not from thin air. Don't subtract from player's money.
                 // Theoretically, we could still cheat because we simulate the Twitch bits here on the SMAPI console, but... yeah.
                 account.Deposit(depositor, amount);
+
+                // Provide in-game visual feedback
+                Game1.addHUDMessage(new HUDMessage($"{depositor} donated G{amount}"));
             }
         }
 
