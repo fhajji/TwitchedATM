@@ -54,6 +54,9 @@ namespace TwitchedATM
                 this.Monitor.Log($"Twitch integration disabled in Mods/TwitchedATM/config.json", LogLevel.Warn);
             }
 
+            // react to keybinds (e.g. to open ATM menu)
+            // helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+
             // react to key presses
             // helper.Events.Input.ButtonPressed += this.OnButtonPressed;
 
@@ -88,6 +91,22 @@ namespace TwitchedATM
                 helper.ConsoleCommands.Add("atm_menu", "Open ATM main menu.", this.CommandOpenATMMenu);
             }
         }
+
+        private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
+        {
+            // XXX this doesn't work (yet).
+
+            this.Monitor.Log($"OnButtonsChanged() called. {config.ATMMenuKey.IsDown()}", LogLevel.Debug);
+
+            if (config.ATMMenuKey.JustPressed())
+            {
+                this.Monitor.Log($"OnButtonsChanged(): ATMMenuKey just pressed", LogLevel.Debug);
+
+                // Display ATM menu
+                OpenATMMenu();
+            }
+        }
+
 
         /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
