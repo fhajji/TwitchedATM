@@ -180,10 +180,16 @@ namespace TwitchedATM
             }
             else if (key == "ATM_LEDGER")
             {
-                this.Monitor.Log($"{account.CurrentActivity()}", LogLevel.Debug);
+                string ledgerAsString = account.CurrentActivity();
+                Game1.currentLocation.createQuestionDialogue(ledgerAsString, new List<StardewValley.Response>().ToArray(), null);
+
+                this.Monitor.Log($"{ledgerAsString}", LogLevel.Debug);
             }
             else if (key == "ATM_PERMANENTLEDGER")
             {
+                string ledgerAsString = account.TotalActivity();
+                Game1.currentLocation.createQuestionDialogue(ledgerAsString, new List<StardewValley.Response>().ToArray(), null);
+
                 this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
             }
         }
