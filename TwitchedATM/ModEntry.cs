@@ -8,7 +8,6 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using System.Threading;
-using TwitchLib.Api.Helix.Models.Charity.GetCharityCampaign;
 
 namespace TwitchedATM
 {

@@ -17,6 +17,7 @@ Stardew Valley ATM with Twitch Integration SMAPI Mod.
   - TWITCHEDATM_BOT_NAME (name of the chatbot joining the broadcaster's channel)
   - TWITCHEDATM_CHANNEL_NAME (name of the broadcaster's channel to monitor for cheers / bits)
   - TWITCHEDATM_ACCESS_TOKEN (OAuth token for TWITCHEDATM_BOT_NAME obtained in previous step)
+* Alternatively, add those values to Mods/TwitchedATM/config.json (created the first time the game is started). Those environment variables override config variables.
 
 [How to set environment variable under Windows](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables?view=powershell-7.3).
 
@@ -88,14 +89,22 @@ _Work in Progress_:
   - atm_activity_total (all summed transactions since account creation)
 * Added deposit interest rate mechanism (triggered at end of each day)
 * Twitch integration currently commented out, since not needed while developing
+* Moved all user-configurable data to Mods/TwitchedATM/config.json
+* TwitchBot now runs in a separate thead (Task) to avoid deadlocking the game
+* Twitch integration working. Can be selectively enabled / disabled in config.json
+* Display Twitch Bits donations exceeding some threshold in-game.
+* Added an account state class, persisting it on-disk at end-of-day.
+* Added in-game menus for Deposits, Withdrawals: done.
+* Added in-game menus for Leaderboard and permanent Leaderboard: dummies - shows them on SMAPI console.
 
 ## TODO
 
-* Add account persistance (as a separate JSON file?)
-* Add game asset that represents the ATM
-* Display account activity infos via in-game UI
-* Access ATM (deposit, withdraw) via in-game UI
-* Package Mod up and release as a zip file. Add to nexusmods etc...
+* Add account persistance (as a separate JSON file?): done. Default: Mods/TwitchedATM/ATM.json. Path settable in Mods/TwitchedATM/config.json.
+* Add game asset that represents the ATM. That will be hard, since PyTK is obsolete. Activate ATM with a hotkey?
+* Display account activity infos via in-game UI: work-in-progress.
+* Access ATM (deposit, withdraw) via in-game UI: done.
+* Implement borrowing credit mechanism: not yet done.
+* Package Mod up and release as a zip file. Add to nexusmods etc...: tbd.
 
 ## Credits
 
