@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -13,7 +14,7 @@ namespace TwitchedATM
         static Config config;
 
         private Account account;
-        // private TwitchBot twitchBot;
+        private TwitchBot twitchBot;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -27,7 +28,12 @@ namespace TwitchedATM
             // At the end of each day, update account (with interests)
             helper.Events.GameLoop.DayEnding += OnNewDay;
 
-            // twitchBot = new TwitchBot(this);
+            // Only start TwitchBot if explicitly enabled in Config.
+            if (config.TwitchIntegrationEnabled)
+            {
+                twitchBot = new TwitchBot(this, config);
+                Task.Run(() => { twitchBot.Run(); });
+            }
 
             // react to key presses
             // helper.Events.Input.ButtonPressed += this.OnButtonPressed;

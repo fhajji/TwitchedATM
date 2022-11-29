@@ -1,5 +1,6 @@
 ﻿using StardewValley;
 using System;
+using TwitchLib.Api.Helix.Models.Charity.GetCharityCampaign;
 // using System.Text.Json;
 // using System.Text.Json.Serialization;
 using TwitchLib.Client;
@@ -31,7 +32,11 @@ namespace TwitchedATM
         ModEntry sv; // links back to Stardew Valley TwitchedATM mod.
         Config config;
 
-        public TwitchBot(ModEntry sv, Config config)
+        ConnectionCredentials credentials;
+        ClientOptions clientOptions;
+        WebSocketClient customClient;
+
+    public TwitchBot(ModEntry sv, Config config)
         {
             this.sv = sv;
             this.config = config;
@@ -47,10 +52,10 @@ namespace TwitchedATM
 
             sv.Monitor.Log($"About to connect to {TWITCHEDATM_CHANNEL_NAME} as {TWITCHEDATM_BOT_NAME}.", StardewModdingAPI.LogLevel.Debug);
 
-            ConnectionCredentials credentials = new(TWITCHEDATM_BOT_NAME, TWITCHEDATM_ACCESS_TOKEN);
-            var clientOptions = new ClientOptions { };
+            credentials = new(TWITCHEDATM_BOT_NAME, TWITCHEDATM_ACCESS_TOKEN);
+            clientOptions = new ClientOptions { };
 
-            WebSocketClient customClient = new WebSocketClient(clientOptions);
+            customClient = new WebSocketClient(clientOptions);
 
             client = new TwitchClient(customClient);
             client.Initialize(credentials, TWITCHEDATM_CHANNEL_NAME);
@@ -58,9 +63,11 @@ namespace TwitchedATM
             client.OnConnected += OnConnected;
             client.OnJoinedChannel += OnJoinedChannel;
             client.OnMessageReceived += OnMessageReceived;
+        }
 
+        public void Run()
+        {
             client.Connect();
-            this.config = config;
         }
 
         private void OnConnected(object sender, OnConnectedArgs e)
@@ -85,10 +92,16 @@ namespace TwitchedATM
             {
                 // User BitsSender sent BitsAmount bits. Add them to the player's funds.
                 sv.Deposit(BitsSender, BitsAmount);
+
+                // Display it in-game!
+                if (BitsAmount >= config.MinimumBitsToDisplayInGame)
+                    Game1.addHUDMessage(new HUDMessage($"{BitsSender} gifted G{BitsAmount}"));
             }
 
             // DEBUG - Display ALL chat messages in SMAPI console. Comment out before making a release.
             sv.Monitor.Log($"M: {e.ChatMessage.DisplayName} {e.ChatMessage.Message}", StardewModdingAPI.LogLevel.Debug);
+
+            // Game1.addHUDMessage(new HUDMessage($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}"));
         }
     }
 }

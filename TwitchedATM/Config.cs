@@ -6,8 +6,12 @@
         public string TWITCHED_ATM_ACCESS_TOKEN { get; set; } = "<your access token here>";
         public string TWITCHED_ATM_CHANNEL_NAME { get; set; } = "<name of channel to monitor for bits here>";
 
+        public bool TwitchIntegrationEnabled = true;
+
         public double DepositInterestRate { get; set; } = 0.06;
         public double CreditInterestRate { get; set; } = 0.15;
+
+        public int MinimumBitsToDisplayInGame { get; set; } = 100;
  
         public string WITHDRAWALS { get; } = "WITHDRAWALS";
         public string INTERESTS { get; } = "INTERESTS";
