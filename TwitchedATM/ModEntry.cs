@@ -8,6 +8,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using System.Threading;
+using TwitchLib.Api.Helix.Models.Charity.GetCharityCampaign;
 
 namespace TwitchedATM
 {
@@ -146,19 +147,42 @@ namespace TwitchedATM
 
             if (key == "ATM_DEPOSIT")
             {
-                this.Monitor.Log("ATM_DEPOSIT menu not yet implemented", LogLevel.Debug);
+                Game1.activeClickableMenu = new NumberSelectionMenu("Deposit amount", (number, price, farmer) => {
+                    // Non-cheating command. Player can only deposit up to available Player's money, and that amount is subtracted from Player's money.
+                    int amountToDeposit = Math.Min(number, Game1.player.Money);
+                    {
+                        // Too bad this can't be an atomic transaction, actually.
+                        Game1.player.Money -= amountToDeposit;
+                        account.Deposit(config.SELF, amountToDeposit);
+                    }
+
+                    Game1.activeClickableMenu = null;
+                }, 0, 0, 1000000, 0);
+
+                this.Monitor.Log("ATM_DEPOSIT menu called", LogLevel.Debug);
             }
             else if (key == "ATM_WITHDRAW")
             {
-                this.Monitor.Log("ATM_WITHDRAW menu not yet implemented", LogLevel.Debug);
+                // what we deposited ourselves doesn't count towards totalMoneyEarned!
+                int selfDeposits = accountState.Ledger[config.SELF];
+
+                // remove ALL money from account
+                int amount = account.Withdraw();
+
+                // add money to player's money
+                Game1.player.Money += amount;
+                if (amount > 0)
+                    Game1.player.totalMoneyEarned += (uint)(amount - selfDeposits);
+
+                this.Monitor.Log("ATM_WITHDRAW menu called", LogLevel.Debug);
             }
             else if (key == "ATM_LEDGER")
             {
-                this.Monitor.Log("ATM_LEDGER menu not yet implemented", LogLevel.Debug);
+                this.Monitor.Log($"{account.CurrentActivity()}", LogLevel.Debug);
             }
             else if (key == "ATM_PERMANENTLEDGER")
             {
-                this.Monitor.Log("ATM_PERMANENTLEDGER menu not yet implemented", LogLevel.Debug);
+                this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
             }
         }
 
@@ -224,13 +248,16 @@ namespace TwitchedATM
         /// <param name="command"></param>
         /// <param name="args"></param>
         public void CommandWithdraw(string command, string[] args) {
+            // what we deposited ourselves doesn't count towards totalMoneyEarned!
+            int selfDeposits = accountState.Ledger[config.SELF];
+            
             // remove ALL money from account
             int amount = account.Withdraw();
 
             // add money to player's money
             Game1.player.Money += amount;
             if (amount > 0)
-                Game1.player.totalMoneyEarned += (uint)amount;
+                Game1.player.totalMoneyEarned += (uint)(amount - selfDeposits);
         }
 
         /// <summary>Display current account activity on SMAPI console.</summary>
