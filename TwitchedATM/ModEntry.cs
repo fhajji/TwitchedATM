@@ -12,20 +12,28 @@ namespace TwitchedATM
     public class ModEntry : Mod
     {
         static Config config;
-
         private Account account;
+        private AccountState accountState;
         private TwitchBot twitchBot;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            // Read global configuration from Mods/TwitchedATM/config.json
             config = helper.ReadConfig<Config>();
             helper.WriteConfig(config);
 
-            account = new Account(this, config);
+            // Read account state (contents) from Mods/TwitchedATM/{config.ATM_SAVE_FILE}
+            accountState = helper.Data.ReadJsonFile<AccountState>(config.ATM_SAVE_FILE) ?? new AccountState();
+            if (! accountState.PermanentLedger.ContainsKey(config.WITHDRAWALS))
+                accountState.PermanentLedger[config.WITHDRAWALS] = 0;
+            if (!accountState.PermanentLedger.ContainsKey(config.INTERESTS))
+                accountState.PermanentLedger[config.INTERESTS] = 0;
 
-            // At the end of each day, update account (with interests)
+            account = new Account(this, config, accountState);
+
+            // At the end of each day, update account (with interests), and save it.
             helper.Events.GameLoop.DayEnding += OnNewDay;
 
             // Only start TwitchBot if explicitly enabled in Config.
@@ -33,6 +41,10 @@ namespace TwitchedATM
             {
                 twitchBot = new TwitchBot(this, config);
                 Task.Run(() => { twitchBot.Run(); });
+            }
+            else
+            {
+                this.Monitor.Log($"Twitch integration disabled in Mods/TwitchedATM/config.json", LogLevel.Warn);
             }
 
             // react to key presses
@@ -61,6 +73,9 @@ namespace TwitchedATM
 
                 // SMAPI console command to display total (summed) account activity on the SMAPI console
                 helper.ConsoleCommands.Add("atm_activity_total", "Show total (summed) account activity.", this.CommandTotalActivity);
+
+                // SMAPI console commant to save account to config.ATM_SAVE_FILE immediately.
+                helper.ConsoleCommands.Add("atm_save_state", "Save account to file NOW.", this.CommandSaveState);
             }
         }
 
@@ -83,7 +98,11 @@ namespace TwitchedATM
 
         private void OnNewDay(object sender, DayEndingEventArgs e)
         {
+            // compute and add/subtract interests for the day
             account.OnNewDay();
+
+            // save account state to config.ATM_SAVE_FILE
+            this.Helper.Data.WriteJsonFile(config.ATM_SAVE_FILE, accountState);
         }
 
         /// <summary>Add to the player's money when the atm_deposit_cheat command is invoked in the SMAPI console (cheater version).</summary>
@@ -171,6 +190,12 @@ namespace TwitchedATM
         private void CommandTotalActivity(string command, string[] args)
         {
             this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
+        }
+
+        private void CommandSaveState(string  command, string[] args)
+        {
+            this.Helper.Data.WriteJsonFile(config.ATM_SAVE_FILE, accountState);
+            this.Monitor.Log($"Account state saved to {config.ATM_SAVE_FILE}", LogLevel.Debug);
         }
     }
 }

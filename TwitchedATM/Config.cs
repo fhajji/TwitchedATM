@@ -8,6 +8,8 @@
 
         public bool TwitchIntegrationEnabled = true;
 
+        public string ATM_SAVE_FILE { get; } = "ATM.json"; // relative to Mods/TwitchedATM folder
+
         public double DepositInterestRate { get; set; } = 0.06;
         public double CreditInterestRate { get; set; } = 0.15;
 

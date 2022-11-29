@@ -1,6 +1,5 @@
 ﻿using StardewValley;
 using System;
-using TwitchLib.Api.Helix.Models.Charity.GetCharityCampaign;
 // using System.Text.Json;
 // using System.Text.Json.Serialization;
 using TwitchLib.Client;

@@ -8,20 +8,15 @@ namespace TwitchedATM
 {
     public class Account
     {
-        private readonly AccountState state;
+        ModEntry sv;        // links back to Stardew Valley TwitchedATM mod.
+        Config config;      // from default.json
+        AccountState state; // Current and permanent ledger (what's in the account)
 
-        ModEntry sv; // links back to Stardew Valley TwitchedATM mod.
-        Config config; // from default.json
-
-        public Account(ModEntry sv, Config config)
+        public Account(ModEntry sv, Config config, AccountState state)
         {
             this.sv = sv;
             this.config = config;
-            state = new AccountState();
-
-            state = new AccountState();
-            state.PermanentLedger[config.WITHDRAWALS] = 0;
-            state.PermanentLedger[config.INTERESTS] = 0;
+            this.state = state;
         }
 
         public void Deposit(string from, int amount)
