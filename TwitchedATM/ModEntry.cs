@@ -148,33 +148,17 @@ namespace TwitchedATM
             if (key == "ATM_DEPOSIT")
             {
                 Game1.activeClickableMenu = new NumberSelectionMenu("Deposit amount", (number, price, farmer) => {
-                    // Non-cheating command. Player can only deposit up to available Player's money, and that amount is subtracted from Player's money.
-                    int amountToDeposit = Math.Min(number, Game1.player.Money);
-                    {
-                        // Too bad this can't be an atomic transaction, actually.
-                        Game1.player.Money -= amountToDeposit;
-                        account.Deposit(config.SELF, amountToDeposit);
-                    }
-
+                    GameToATM(number, config.SELF);
                     Game1.activeClickableMenu = null;
                 }, 0, 0, 1000000, 0);
 
-                this.Monitor.Log("ATM_DEPOSIT menu called", LogLevel.Debug);
+                // this.Monitor.Log("ATM_DEPOSIT menu called", LogLevel.Debug);
             }
             else if (key == "ATM_WITHDRAW")
             {
-                // what we deposited ourselves doesn't count towards totalMoneyEarned!
-                int selfDeposits = accountState.Ledger[config.SELF];
-
-                // remove ALL money from account
-                int amount = account.Withdraw();
-
-                // add money to player's money
-                Game1.player.Money += amount;
-                if (amount > 0)
-                    Game1.player.totalMoneyEarned += (uint)(amount - selfDeposits);
-
-                this.Monitor.Log("ATM_WITHDRAW menu called", LogLevel.Debug);
+                ATMToGame();
+                
+                // this.Monitor.Log("ATM_WITHDRAW menu called", LogLevel.Debug);
             }
             else if (key == "ATM_LEDGER")
             {
@@ -184,6 +168,32 @@ namespace TwitchedATM
             {
                 this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
             }
+        }
+
+        private void GameToATM(int amount, string depositor)
+        {
+            // Non-cheating command. Player can only deposit up to available Player's money, and that amount is subtracted from Player's money.
+            int amountToDeposit = Math.Min(amount, Game1.player.Money);
+            {
+                // Too bad this can't be an atomic transaction, actually.
+                Game1.player.Money -= amountToDeposit;
+                account.Deposit(depositor, amountToDeposit);
+            }
+        }
+
+        private void ATMToGame()
+        {
+            // what we deposited ourselves doesn't count towards totalMoneyEarned!
+            int selfDeposits = accountState.Ledger[config.SELF];
+
+            // remove ALL money from account
+            int amount = account.Withdraw();
+
+            // add money to player's money
+            Game1.player.Money += amount;
+            if (amount > 0)
+                Game1.player.totalMoneyEarned += (uint)(amount - selfDeposits);
+
         }
 
         /// <summary>Add to the player's money when the atm_deposit_cheat command is invoked in the SMAPI console (cheater version).</summary>
@@ -208,25 +218,25 @@ namespace TwitchedATM
             if (args.Length == 0)
                 return;
 
-            int amount = int.Parse(args[0]);
-            if (amount <= 0) return;
+            int amount = 0;
+            try
+            {
+                amount = int.Parse(args[0]);
+                if (amount <= 0) return;
+            }
+            catch(Exception e) {
+                this.Monitor.Log($"atm_deposit() error. Wrong order of arguments?", LogLevel.Debug);
+            }
 
             string depositor = args.Length == 2 ? args[1] : config.SELF;
 
             if (depositor == config.SELF)
             {
-                // Non-cheating command. Player can only deposit up to available Player's money, and that amount is subtracted from Player's money.
-                int amountToDeposit = Math.Min(amount, Game1.player.Money);
-                {
-                    // Too bad this can't be an atomic transaction, actually.
-                    Game1.player.Money -= amountToDeposit;
-                    account.Deposit(config.SELF, amountToDeposit);
-                }
-                
+                GameToATM(amount, config.SELF);                
             }
             else
             {
-                // Everyone else contributed bits (evtl. simulated), so not from thin air. Don't subtract from player's money.
+                // Everyone else contributed bits (evtl. simulated), so not out of thin air. Don't subtract from player's money.
                 // Theoretically, we could still cheat because we simulate the Twitch bits here on the SMAPI console, but... yeah.
                 account.Deposit(depositor, amount);
 
@@ -248,16 +258,7 @@ namespace TwitchedATM
         /// <param name="command"></param>
         /// <param name="args"></param>
         public void CommandWithdraw(string command, string[] args) {
-            // what we deposited ourselves doesn't count towards totalMoneyEarned!
-            int selfDeposits = accountState.Ledger[config.SELF];
-            
-            // remove ALL money from account
-            int amount = account.Withdraw();
-
-            // add money to player's money
-            Game1.player.Money += amount;
-            if (amount > 0)
-                Game1.player.totalMoneyEarned += (uint)(amount - selfDeposits);
+            ATMToGame();
         }
 
         /// <summary>Display current account activity on SMAPI console.</summary>
