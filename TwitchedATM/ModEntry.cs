@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
+using System.Threading;
 
 namespace TwitchedATM
 {
@@ -15,6 +18,8 @@ namespace TwitchedATM
         private Account account;
         private AccountState accountState;
         private TwitchBot twitchBot;
+
+        private List<StardewValley.Response> atmMenuResponses;
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -32,6 +37,8 @@ namespace TwitchedATM
                 accountState.PermanentLedger[config.INTERESTS] = 0;
 
             account = new Account(this, config, accountState);
+
+            atmMenuResponses = CreateATMMenuResponses();
 
             // At the end of each day, update account (with interests), and save it.
             helper.Events.GameLoop.DayEnding += OnNewDay;
@@ -74,8 +81,11 @@ namespace TwitchedATM
                 // SMAPI console command to display total (summed) account activity on the SMAPI console
                 helper.ConsoleCommands.Add("atm_activity_total", "Show total (summed) account activity.", this.CommandTotalActivity);
 
-                // SMAPI console commant to save account to config.ATM_SAVE_FILE immediately.
+                // SMAPI console command to save account to config.ATM_SAVE_FILE immediately.
                 helper.ConsoleCommands.Add("atm_save_state", "Save account to file NOW.", this.CommandSaveState);
+
+                // SMAPI console command to open the in-game ATM main menu.
+                helper.ConsoleCommands.Add("atm_menu", "Open ATM main menu.", this.CommandOpenATMMenu);
             }
         }
 
@@ -103,6 +113,53 @@ namespace TwitchedATM
 
             // save account state to config.ATM_SAVE_FILE
             this.Helper.Data.WriteJsonFile(config.ATM_SAVE_FILE, accountState);
+        }
+
+        private static List<StardewValley.Response> CreateATMMenuResponses()
+        {
+            List<StardewValley.Response> options = new()
+            {
+                new StardewValley.Response("ATM_DEPOSIT", "Deposit"),
+                new StardewValley.Response("ATM_WITHDRAW", "Withdraw"),
+                new StardewValley.Response("ATM_LEDGER", "Leaderboard (current)"),
+                new StardewValley.Response("ATM_PERMANENTLEDGER", "Leaderboard (all-times)"),
+                new StardewValley.Response("ATM_CLOSE", "Exit Menu")
+            };
+            return options;
+        }
+
+        private void OpenATMMenu()
+        {
+            if (!Game1.IsMasterGame)
+            {
+                Game1.addHUDMessage(new HUDMessage("Only the main farmer can use the ATM."));
+                return;
+            }
+
+            string text = $"Balance: {account.Balance()}";
+            Game1.currentLocation.createQuestionDialogue(text, atmMenuResponses.ToArray(), OpenATMMenuNext);
+        }
+
+        private void OpenATMMenuNext(Farmer who, string key) {
+            if (key == "ATM_CLOSE")
+                return;
+
+            if (key == "ATM_DEPOSIT")
+            {
+                this.Monitor.Log("ATM_DEPOSIT menu not yet implemented", LogLevel.Debug);
+            }
+            else if (key == "ATM_WITHDRAW")
+            {
+                this.Monitor.Log("ATM_WITHDRAW menu not yet implemented", LogLevel.Debug);
+            }
+            else if (key == "ATM_LEDGER")
+            {
+                this.Monitor.Log("ATM_LEDGER menu not yet implemented", LogLevel.Debug);
+            }
+            else if (key == "ATM_PERMANENTLEDGER")
+            {
+                this.Monitor.Log("ATM_PERMANENTLEDGER menu not yet implemented", LogLevel.Debug);
+            }
         }
 
         /// <summary>Add to the player's money when the atm_deposit_cheat command is invoked in the SMAPI console (cheater version).</summary>
@@ -196,6 +253,12 @@ namespace TwitchedATM
         {
             this.Helper.Data.WriteJsonFile(config.ATM_SAVE_FILE, accountState);
             this.Monitor.Log($"Account state saved to {config.ATM_SAVE_FILE}", LogLevel.Debug);
+        }
+
+        private void CommandOpenATMMenu(string command, string[] args)
+        {
+            // Open in-game ATM main menu
+            OpenATMMenu();
         }
     }
 }
