@@ -164,7 +164,21 @@ namespace TwitchedATM
                 name: () => "Twitch Integration",
                 tooltip: () => "Enable Twitch Chat Integration.",
                 getValue: () => config.TwitchIntegrationEnabled,
-                setValue: value => config.TwitchIntegrationEnabled = value
+                setValue: value => {
+                    if (twitchBot != null && value == false)
+                    {
+                        // Twitch Integration was enabled (and running). Can't stop it without manual restart (XXX: really?)
+                        this.Monitor.Log("Twitch Integration Disabled. Manually Restart Stardew Valley to stop listening to Twitch.", LogLevel.Warn);
+                    }
+
+                    config.TwitchIntegrationEnabled = value;
+                    if (value == true && twitchBot == null)
+                    {
+                        // Twitch Integration was disabled. Enable it now!
+                        twitchBot = new TwitchBot(this, config);
+                        Task.Run(() => { twitchBot.Run(); });
+                    }
+                }
             );
 
             configMenu.AddTextOption(

@@ -66,17 +66,18 @@ namespace TwitchedATM
 
         public void Run()
         {
-            client.Connect();
+            bool result = client.Connect();
+            sv.Monitor.Log($"Connected to Twitch: {result}", StardewModdingAPI.LogLevel.Info);
         }
 
         private void OnConnected(object sender, OnConnectedArgs e)
         {
-            sv.Monitor.Log($"Connected to {e.AutoJoinChannel}", StardewModdingAPI.LogLevel.Debug);
+            sv.Monitor.Log($"Connected to Twitch Chat Server as {e.BotUsername}", StardewModdingAPI.LogLevel.Info);
         }
 
         private void OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            sv.Monitor.Log($"Joined channel {e.ToString()}", StardewModdingAPI.LogLevel.Debug);
+            sv.Monitor.Log($"Joined channel {e.Channel} as {e.BotUsername}", StardewModdingAPI.LogLevel.Info);
 
             // Commented out while developing. Don't spam others' channels!
             // client.SendMessage(e.Channel, "TwitchedATM bot listening to cheers/bits");
