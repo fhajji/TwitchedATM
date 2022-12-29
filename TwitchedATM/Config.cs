@@ -16,6 +16,7 @@ namespace TwitchedATM
 
         public double DepositInterestRate { get; set; } = 0.06;
         public double CreditInterestRate { get; set; } = 0.15;
+        public double ConversionFactor { get; set; } = 10.0; // in-game-Gs = bits*ConversionFactor
 
         public int MinimumBitsToDisplayInGame { get; set; } = 100;
  

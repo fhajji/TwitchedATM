@@ -86,15 +86,16 @@ namespace TwitchedATM
         {
             string BitsSender = e.ChatMessage.DisplayName;
             int BitsAmount = e.ChatMessage.Bits;
+            int GAmount = Convert.ToInt32(BitsAmount * config.ConversionFactor);
 
             if (BitsAmount > 0)
             {
                 // User BitsSender sent BitsAmount bits. Add them to the player's funds.
-                sv.Deposit(BitsSender, BitsAmount);
+                sv.Deposit(BitsSender, GAmount);
 
                 // Display it in-game!
                 if (BitsAmount >= config.MinimumBitsToDisplayInGame)
-                    Game1.addHUDMessage(new HUDMessage($"{BitsSender} gifted G{BitsAmount}"));
+                    Game1.addHUDMessage(new HUDMessage($"{BitsSender} gifted G{GAmount}"));
             }
 
             // DEBUG - Display ALL chat messages in SMAPI console. Comment out before making a release.

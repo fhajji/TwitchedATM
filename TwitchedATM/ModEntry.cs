@@ -8,6 +8,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using System.Threading;
+using TwitchLib.Client.Models;
 
 namespace TwitchedATM
 {
@@ -229,7 +230,7 @@ namespace TwitchedATM
             if (args.Length == 0)
                 return;
 
-            int amount = int.Parse(args[0]);
+            int amount = Convert.ToInt32(int.Parse(args[0]) * config.ConversionFactor);
             account.Deposit(args.Length == 2 ? args[1] : config.CHEATER, amount);
         }
 
@@ -245,7 +246,7 @@ namespace TwitchedATM
             int amount = 0;
             try
             {
-                amount = int.Parse(args[0]);
+                amount = Convert.ToInt32(int.Parse(args[0]) * config.ConversionFactor);
                 if (amount <= 0) return;
             }
             catch(Exception e) {
@@ -269,13 +270,13 @@ namespace TwitchedATM
             }
         }
 
-        /// <summary>Depositor deposits amount into the account. Helper function needed TwitchBot.</summary>
+        /// <summary>Depositor deposits amount into the account. Helper function needed by TwitchBot.</summary>
         /// <param name="depositor">Name of Twitch donator</param>
-        /// <param name="amount">Amount of Twitch bits donated</param>
+        /// <param name="amount">Amount of Gs (= Twitch bits * config.ConversionFactor) donated</param>
         public void Deposit(string depositor, int amount)
         {
             if (amount > 0)
-                account.Deposit(depositor, amount); // XXX multiply amount by some factor?
+                account.Deposit(depositor, amount);
         }
         
         /// <summary>Withdraw ALL money from account and add it to player's money.</summary>
