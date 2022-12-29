@@ -181,6 +181,14 @@ namespace TwitchedATM
                 }
             );
 
+            configMenu.AddKeybindList(
+                mod: this.ModManifest,
+                name: () => "ATM Menu Key",
+                tooltip: () => "Key(s) to enable the ATM Menu.",
+                getValue: () => config.ATMMenuKey,
+                setValue: value => config.ATMMenuKey = value
+            );
+
             configMenu.AddNumberOption(
                 mod: this.ModManifest,
                 name: () => "Minimum Bits to Display in-Game",
@@ -190,16 +198,6 @@ namespace TwitchedATM
                 min: 1,
                 max: null
             );
-
-            /*
-            configMenu.AddTextOption(
-                mod: this.ModManifest,
-                name: () => "ATM Menu Key",
-                tooltip: () => "Key to enable the ATM Menu.",
-                getValue: () => config.ATMMenuKey,
-                setValue: value => config.ATMMenuKey = KeybindList(value)
-            );
-            */
 
             configMenu.AddNumberOption(
                 mod: this.ModManifest,
