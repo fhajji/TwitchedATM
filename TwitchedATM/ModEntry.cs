@@ -9,6 +9,7 @@ using StardewValley;
 using StardewValley.Menus;
 using System.Threading;
 using TwitchLib.Client.Models;
+using GenericModConfigMenu;
 
 namespace TwitchedATM
 {
@@ -60,6 +61,9 @@ namespace TwitchedATM
 
             // react to key presses
             // helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+            // Integrate GenericModConfigMenu
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
             if (Game1.IsMasterGame)
             {
@@ -129,6 +133,76 @@ namespace TwitchedATM
             // Display player's money when G is pressed.
             if (e.Button.ToString() == "G")
                 this.Monitor.Log($"Current balance: {Game1.player.Money}. Total earned: {Game1.player.totalMoneyEarned}", LogLevel.Debug);
+        }
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            this.Monitor.Log("OnGameLaunched() called", LogLevel.Debug);
+
+            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null) {
+                this.Monitor.Log("spacechase0.GenericModConfigMenu not installed. Configure options manually in TwitchedATM/config.json.", LogLevel.Info);
+                return; // Player didn't install GenericModConfigMenu mod
+            }
+
+            // register mod
+            configMenu.Register(
+                mod: this.ModManifest,
+                reset: () => {
+                    /* this.Config = new ModConfig() */
+                    this.Monitor.Log("configMenu.Register.reset not yet implemented. Edit config.json manually.", LogLevel.Warn);
+                },
+                save: () => {
+                    this.Helper.WriteConfig(config);
+                }
+            );
+
+            // add some config options
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => "Twitch Integration",
+                tooltip: () => "Enable Twitch Chat Integration.",
+                getValue: () => config.TwitchIntegrationEnabled,
+                setValue: value => config.TwitchIntegrationEnabled = value
+            );
+
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: () => "Minimum Bits to Display in-Game",
+                tooltip: () => "Bits donations >= this amout will be displayed in-Game",
+                getValue: () => $"{config.MinimumBitsToDisplayInGame}",
+                setValue: value => config.MinimumBitsToDisplayInGame = Convert.ToInt32(value)
+            );
+
+            /*
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: () => "ATM Menu Key",
+                tooltip: () => "Key to enable the ATM Menu.",
+                getValue: () => config.ATMMenuKey,
+                setValue: value => config.ATMMenuKey = KeybindList(value)
+            );
+            */
+
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: () => "Bits to G Conversion Factor",
+                tooltip: () => "G = Bits * Conversion Factor",
+                getValue: () => $"{config.ConversionFactor}",
+                setValue: value => config.ConversionFactor = Convert.ToDouble(value)
+            );
+
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: () => "Deposit Interest Rate",
+                tooltip: () => "How much interest to get from deposits (in %)",
+                getValue: () => $"{config.DepositInterestRate * 100}",
+                setValue: value => config.DepositInterestRate = Convert.ToDouble(value) * 0.01
+            );
+
+
+
         }
 
         private void OnNewDay(object sender, DayEndingEventArgs e)
@@ -248,10 +322,12 @@ namespace TwitchedATM
             if (args.Length == 0)
                 return;
 
+            int bits = 0;
             int amount = 0;
             try
             {
-                amount = Convert.ToInt32(int.Parse(args[0]) * config.ConversionFactor);
+                bits = int.Parse(args[0]);
+                amount = Convert.ToInt32(bits * config.ConversionFactor);
                 if (amount <= 0) return;
             }
             catch(Exception e) {
@@ -271,7 +347,8 @@ namespace TwitchedATM
                 account.Deposit(depositor, amount);
 
                 // Provide in-game visual feedback
-                Game1.addHUDMessage(new HUDMessage($"{depositor} donated G{amount}"));
+                if (bits >= config.MinimumBitsToDisplayInGame)
+                    Game1.addHUDMessage(new HUDMessage($"{depositor} donated G{amount}"));
             }
         }
 
