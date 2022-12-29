@@ -181,12 +181,14 @@ namespace TwitchedATM
                 }
             );
 
-            configMenu.AddTextOption(
+            configMenu.AddNumberOption(
                 mod: this.ModManifest,
                 name: () => "Minimum Bits to Display in-Game",
-                tooltip: () => "Bits donations >= this amout will be displayed in-Game",
-                getValue: () => $"{config.MinimumBitsToDisplayInGame}",
-                setValue: value => config.MinimumBitsToDisplayInGame = Convert.ToInt32(value)
+                tooltip: () => "Smallest required Bits donation to be displayed in-Game",
+                getValue: () => config.MinimumBitsToDisplayInGame,
+                setValue: value => config.MinimumBitsToDisplayInGame = Convert.ToInt32(value),
+                min: 1,
+                max: null
             );
 
             /*
@@ -199,23 +201,25 @@ namespace TwitchedATM
             );
             */
 
-            configMenu.AddTextOption(
+            configMenu.AddNumberOption(
                 mod: this.ModManifest,
                 name: () => "Bits to G Conversion Factor",
                 tooltip: () => "G = Bits * Conversion Factor",
-                getValue: () => $"{config.ConversionFactor}",
-                setValue: value => config.ConversionFactor = Convert.ToDouble(value)
+                getValue: () => Convert.ToSingle(config.ConversionFactor),
+                setValue: value => config.ConversionFactor = Convert.ToDouble(value),
+                min: 1.0f,
+                max: null
             );
 
-            configMenu.AddTextOption(
+            configMenu.AddNumberOption(
                 mod: this.ModManifest,
                 name: () => "Deposit Interest Rate",
                 tooltip: () => "How much interest to get from deposits (in %)",
-                getValue: () => $"{config.DepositInterestRate * 100}",
-                setValue: value => config.DepositInterestRate = Convert.ToDouble(value) * 0.01
+                getValue: () => Convert.ToSingle(config.DepositInterestRate * 100.0),
+                setValue: value => config.DepositInterestRate = Convert.ToDouble(value) * 0.01,
+                min: 0.0f,
+                max: null
             );
-
-
 
         }
 
