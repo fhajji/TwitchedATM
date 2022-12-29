@@ -100,6 +100,7 @@ _Work in Progress_:
 * Added in-game menus for Deposits, Withdrawals: done.
 * Added in-game menus for Leaderboard and permanent Leaderboard: dummies - shows them on SMAPI console.
 * Added conversion factor Bits -> Gs.
+* Activate ATM menu when pressing a key (Config.ATMMenuKey)
 
 ## TODO
 

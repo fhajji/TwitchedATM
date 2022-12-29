@@ -56,7 +56,7 @@ namespace TwitchedATM
             }
 
             // react to keybinds (e.g. to open ATM menu)
-            // helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+            helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
             // react to key presses
             // helper.Events.Input.ButtonPressed += this.OnButtonPressed;
@@ -95,13 +95,18 @@ namespace TwitchedATM
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
         {
-            // XXX this doesn't work (yet).
-
-            this.Monitor.Log($"OnButtonsChanged() called. {config.ATMMenuKey.IsDown()}", LogLevel.Debug);
+            // this.Monitor.Log($"OnButtonsChanged() called. {config.ATMMenuKey.IsDown()}", LogLevel.Debug);
 
             if (config.ATMMenuKey.JustPressed())
             {
-                this.Monitor.Log($"OnButtonsChanged(): ATMMenuKey just pressed", LogLevel.Debug);
+                // this.Monitor.Log($"OnButtonsChanged(): ATMMenuKey just pressed", LogLevel.Debug);
+
+                // ignore if player hasn't loaded a save yet
+                if (!Context.IsWorldReady)
+                {
+                    this.Monitor.Log("ATMMenu() only available after game has been loaded.", LogLevel.Debug);
+                    return;
+                }
 
                 // Display ATM menu
                 OpenATMMenu();

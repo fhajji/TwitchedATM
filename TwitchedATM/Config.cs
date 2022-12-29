@@ -12,7 +12,7 @@ namespace TwitchedATM
 
         public string ATM_SAVE_FILE { get; } = "ATM.json"; // relative to Mods/TwitchedATM folder
 
-        public KeybindList ATMMenuKey { get; set; } = KeybindList.Parse("RightShift");
+        public KeybindList ATMMenuKey { get; set; } = KeybindList.Parse("G");
 
         public double DepositInterestRate { get; set; } = 0.06;
         public double CreditInterestRate { get; set; } = 0.15;
