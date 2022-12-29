@@ -67,17 +67,17 @@ namespace TwitchedATM
         public void Run()
         {
             bool result = client.Connect();
-            sv.Monitor.Log($"Connected to Twitch: {result}", StardewModdingAPI.LogLevel.Info);
+            sv.Monitor.Log($"Connected to Twitch: {result}", StardewModdingAPI.LogLevel.Warn);
         }
 
         private void OnConnected(object sender, OnConnectedArgs e)
         {
-            sv.Monitor.Log($"Connected to Twitch Chat Server as {e.BotUsername}", StardewModdingAPI.LogLevel.Info);
+            sv.Monitor.Log($"Connected to Twitch Chat Server as {e.BotUsername}", StardewModdingAPI.LogLevel.Warn);
         }
 
         private void OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            sv.Monitor.Log($"Joined channel {e.Channel} as {e.BotUsername}", StardewModdingAPI.LogLevel.Info);
+            sv.Monitor.Log($"Joined channel {e.Channel} as {e.BotUsername}", StardewModdingAPI.LogLevel.Warn);
 
             // Commented out while developing. Don't spam others' channels!
             // client.SendMessage(e.Channel, "TwitchedATM bot listening to cheers/bits");
@@ -100,9 +100,7 @@ namespace TwitchedATM
             }
 
             // DEBUG - Display ALL chat messages in SMAPI console. Comment out before making a release.
-            sv.Monitor.Log($"M: {e.ChatMessage.DisplayName} {e.ChatMessage.Message}", StardewModdingAPI.LogLevel.Debug);
-
-            // Game1.addHUDMessage(new HUDMessage($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}"));
+            // sv.Monitor.Log($"M: {e.ChatMessage.DisplayName} {e.ChatMessage.Message}", StardewModdingAPI.LogLevel.Debug);
         }
     }
 }
