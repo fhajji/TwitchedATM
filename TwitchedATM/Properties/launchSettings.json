@@ -1,10 +1,7 @@
 {
   "profiles": {
     "TwitchedATM": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "TWITCHEDATM_CHANNEL_NAME": "cearalynch"
-      }
+      "commandName": "Project"
     }
   }
 }

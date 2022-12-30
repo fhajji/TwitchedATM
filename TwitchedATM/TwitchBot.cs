@@ -35,6 +35,12 @@ namespace TwitchedATM
         ClientOptions clientOptions;
         WebSocketClient customClient;
 
+        string currentChannelName = "<disconnected>";
+        public string Channel
+        {
+            get { return this.currentChannelName; }
+        }
+
     public TwitchBot(ModEntry sv, Config config)
         {
             this.sv = sv;
@@ -77,6 +83,8 @@ namespace TwitchedATM
 
         private void OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
+            currentChannelName = e.Channel;
+
             sv.Monitor.Log($"Joined channel {e.Channel} as {e.BotUsername}", StardewModdingAPI.LogLevel.Warn);
 
             // Commented out while developing. Don't spam others' channels!

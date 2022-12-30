@@ -162,7 +162,7 @@ namespace TwitchedATM
             configMenu.AddSectionTitle(
                 mod: this.ModManifest,
                 text: () => "Twitch Integration",
-                tooltip: () => "Configure those parameters in Mods/TwitchedATM/config.json and (optionally) override them by setting environment variables"
+                tooltip: () => "Configure Twitch Bot Name and Access Token in Mods/TwitchedATM/config.json and (optionally) override them by setting environment variables"
             );
 
             configMenu.AddBoolOption(
@@ -207,7 +207,12 @@ namespace TwitchedATM
                 mod: this.ModManifest,
                 name: () => "Twitch Channel",
                 tooltip: () => "Name of Twitch Channel (Broadcaster) to monitor for Bits",
-                getValue: () => config.TWITCHED_ATM_CHANNEL_NAME,
+                getValue: () => {
+                    if (twitchBot != null)
+                        return twitchBot.Channel;
+                    else
+                        return config.TWITCHED_ATM_CHANNEL_NAME;
+                    },
                 setValue: value =>
                 {
                     if (value != config.TWITCHED_ATM_CHANNEL_NAME && twitchBot != null)
@@ -215,69 +220,6 @@ namespace TwitchedATM
                         config.TWITCHED_ATM_CHANNEL_NAME = value;
                         this.Monitor.Log("Manually restart Stardew Valley for Twitch Channel Name change to take effect", LogLevel.Alert);
                     }                    
-                }
-            );
-
-            configMenu.AddTextOption(
-                /*
-                 * The TwitchBot Twitch Username isn't sensitive and can be shown in-Game.
-                 * 
-                 * Changing it requires also changing the Twitch Access Token,
-                 * and therefore a manual Stardew Valley restart.
-                 * 
-                 * To change the bot name, close SV, edit config.json
-                 * or override that by setting environment variable TWITCHEDATM_BOT_NAME
-                 * then restart SV.
-                 * 
-                 * CAVEAT:
-                 *   If the TWITCHEDATM_BOT_NAME environment variable is set,
-                 *   that setting _always_ overrides what is in config.json.
-                 *   
-                 *   Therefore, just changing the channel name in config.json (and estarting SV)
-                 *   may not have the desired effect.
-                 *   
-                 * TODO (XXX, once we allow changing this value): set the process and user environment variable too, as shown in
-                 *   https://learn.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable?view=net-5.0
-                 */
-                mod: this.ModManifest,
-                name: () => "TwitchBot Name",
-                tooltip: () => "TwitchBot's Twitch Username. To change: manually set environment variable TWITCHEDATM_BOT_NAME or edit Mods/TwitchedATM/config.json",
-                getValue: () => config.TWITCHED_ATM_BOT_NAME,
-                setValue: value =>
-                {
-                    if (value != config.TWITCHED_ATM_BOT_NAME)
-                    {
-                        // Changing the TwitchBot Twitch Username in-Game is not allowed.
-                        this.Monitor.Log("Change Twitch Bot Name manually in config.json or set TWITCHED_ATM_BOT_NAME environment variable to override", LogLevel.Warn);
-                    }
-                }
-            );
-
-            configMenu.AddTextOption(
-                /*
-                 * Don't display Twitch Access Token in-Game
-                 * to prevent streamers from accidentally leaking their token on stream.
-                 * 
-                 * Manually
-                 *   - edit Mods/TwitchedATM/config.json
-                 *   - or set environment variable TWITCHEDATM_ACCESS_TOKEN
-                 * instead.
-                 * 
-                 * Environment variables take precedence over config.json settings.
-                 * 
-                 * Restart Stardew Valley after that for changes to take effect.
-                 */
-                mod: this.ModManifest,
-                name: () => "Twitch Access Token",
-                tooltip: () => "TwitchBot's Twitch Access Token (manually set environment variable TWITCHEDATM_ACCESS_TOKEN or edit Mods/TwitchedATM/config.json)",
-                getValue: () => "XXXXXXXXXX",
-                setValue: value =>
-                {
-                    if (value != config.TWITCHED_ATM_ACCESS_TOKEN)
-                    {
-                        // Changing the Twitch Access Token in-Game not allowed.
-                        this.Monitor.Log("Change Twitch Access Token manually in Mods/TwitchedATM/config.json or set TWITCHEDATM_ACCESS_TOKEN environment variable to override", LogLevel.Warn);
-                    }
                 }
             );
 
