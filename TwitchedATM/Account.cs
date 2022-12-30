@@ -64,10 +64,15 @@ namespace TwitchedATM
 
             var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
 
+            bool firstEntry = true;
             string strOut = "[";
             foreach (var kv in leaderBoard)
             {
-                strOut += kv.Key + ": " + kv.Value + ", \n";
+                if (!firstEntry)
+                    strOut += ", \n";
+
+                strOut += kv.Key + ": " + kv.Value;
+                firstEntry = false;
             }
             strOut += "]";
             return strOut;
@@ -82,10 +87,15 @@ namespace TwitchedATM
 
             var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
 
+            bool firstEntry = true;
             string strOut = "[";
             foreach (var kv in leaderBoard)
             {
-                strOut += kv.Key + ": " + kv.Value + ", \n";
+                if (!firstEntry)
+                    strOut += ", \n";
+
+                strOut += kv.Key + ": " + kv.Value;
+                firstEntry = false;
             }
             strOut += "]";
             return strOut;
