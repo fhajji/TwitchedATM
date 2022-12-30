@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
-using System.Threading;
-using TwitchLib.Client.Models;
 using GenericModConfigMenu;
 
 namespace TwitchedATM
@@ -27,13 +23,26 @@ namespace TwitchedATM
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            /*
+             * Farm hands aren't allowed to access the ATM
+             *   - for game-logical reasons (farm hands have no say in finances)
+             *   - because the account state is NOT replicated to and from the farm hands' computers
+             *   - because only the main farmer collects twitch bits
+             */
+
+            if (!Game1.IsMasterGame)
+            {
+                this.Monitor.Log("Only main farmer can use the ATM.", LogLevel.Warn);
+                return;
+            }
+
             // Read global configuration from Mods/TwitchedATM/config.json
             config = helper.ReadConfig<Config>();
             helper.WriteConfig(config);
 
             // Read account state (contents) from Mods/TwitchedATM/{config.ATM_SAVE_FILE}
             accountState = helper.Data.ReadJsonFile<AccountState>(config.ATM_SAVE_FILE) ?? new AccountState();
-            if (! accountState.PermanentLedger.ContainsKey(config.WITHDRAWALS))
+            if (!accountState.PermanentLedger.ContainsKey(config.WITHDRAWALS))
                 accountState.PermanentLedger[config.WITHDRAWALS] = 0;
             if (!accountState.PermanentLedger.ContainsKey(config.INTERESTS))
                 accountState.PermanentLedger[config.INTERESTS] = 0;
@@ -59,42 +68,36 @@ namespace TwitchedATM
             // react to keybinds (e.g. to open ATM menu)
             helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
 
-            // react to key presses
-            // helper.Events.Input.ButtonPressed += this.OnButtonPressed;
-
             // Integrate GenericModConfigMenu
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
-            if (Game1.IsMasterGame)
-            {
-                /*
-                 * The following SMAPI console commands are reserved to the main farmer.
-                 * Farm hands aren't allowed to access the ATM
-                 *   - for game-logical reasons (farm hands have no say in finances)
-                 *   - because the account state is NOT replicated to and from the farm hands' computers.
-                 */
+            /*
+             * For development and debug purposes, register some SMAPI console commands.
+             * 
+             * To show a list of SMAPI commands, type 'help' in the SMAPI console.
+             * The exact syntax for a command COMMAND is shown with 'help COMMAND'.
+             */
 
-                // cheater SMAPI console command to add to player's money (FED, central bank function, minting money out of thin air)
-                helper.ConsoleCommands.Add("atm_deposit_cheat", $"Add to the player's money.\n\nUsage: atm_deposit_cheat <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.CHEATER})", this.CommandDepositCheat);
+            // cheater SMAPI console command to add to player's money (FED, central bank function, minting money out of thin air)
+            helper.ConsoleCommands.Add("atm_deposit_cheat", $"Add to the player's money.\n\nUsage: atm_deposit_cheat <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.CHEATER})", this.CommandDepositCheat);
 
-                // SMAPI console command to deposit player's money or (simulated) Twitch bits in the account (honest function).
-                helper.ConsoleCommands.Add("atm_deposit", $"Deposit player's money or (simulated) Twitch bits into account.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.SELF})", this.CommandDeposit);
+            // SMAPI console command to deposit player's money or (simulated) Twitch bits in the account (honest function).
+            helper.ConsoleCommands.Add("atm_deposit", $"Deposit player's money or (simulated) Twitch bits into account.\n\nUsage: atm_deposit <value> [<sender>]\n- value: the integer amount.\n- sender: name of depositor (default: {config.SELF})", this.CommandDeposit);
 
-                // SMAPI console command to withdraw money from account and add it to player's money
-                helper.ConsoleCommands.Add("atm_withdraw", "Move money from account into player's money.", this.CommandWithdraw);
+            // SMAPI console command to withdraw money from account and add it to player's money
+            // helper.ConsoleCommands.Add("atm_withdraw", "Move money from account into player's money.", this.CommandWithdraw);
 
-                // SMAPI console command to display current account activity on the SMAPI console
-                helper.ConsoleCommands.Add("atm_activity_current", "Show current account activity.", this.CommandCurrentActivity);
+            // SMAPI console command to display current account activity on the SMAPI console
+            // helper.ConsoleCommands.Add("atm_activity_current", "Show current account activity.", this.CommandCurrentActivity);
 
-                // SMAPI console command to display total (summed) account activity on the SMAPI console
-                helper.ConsoleCommands.Add("atm_activity_total", "Show total (summed) account activity.", this.CommandTotalActivity);
+            // SMAPI console command to display total (summed) account activity on the SMAPI console
+            // helper.ConsoleCommands.Add("atm_activity_total", "Show total (summed) account activity.", this.CommandTotalActivity);
 
-                // SMAPI console command to save account to config.ATM_SAVE_FILE immediately.
-                helper.ConsoleCommands.Add("atm_save_state", "Save account to file NOW.", this.CommandSaveState);
+            // SMAPI console command to save account to config.ATM_SAVE_FILE immediately.
+            helper.ConsoleCommands.Add("atm_save_state", "Save account to file NOW.", this.CommandSaveState);
 
-                // SMAPI console command to open the in-game ATM main menu.
-                helper.ConsoleCommands.Add("atm_menu", "Open ATM main menu.", this.CommandOpenATMMenu);
-            }
+            // SMAPI console command to open the in-game ATM main menu.
+            helper.ConsoleCommands.Add("atm_menu", "Open ATM main menu.", this.CommandOpenATMMenu);
         }
 
         private void OnButtonsChanged(object sender, ButtonsChangedEventArgs e)
@@ -112,32 +115,25 @@ namespace TwitchedATM
                     return;
                 }
 
+                // ignore for farm hands
+                if (!Game1.IsMasterGame)
+                {
+                    this.Monitor.Log("ATMMenu() only available to main farmer.", LogLevel.Info);
+                    return;
+                }
+
                 // Display ATM menu
                 OpenATMMenu();
             }
         }
 
-
-        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event data.</param>
-        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
-        {
-            // ignore if player hasn't loaded a save yet
-            if (!Context.IsWorldReady)
-                return;
-
-            // print button presses to the console window
-            this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.", LogLevel.Debug);
-
-            // Display player's money when G is pressed.
-            if (e.Button.ToString() == "G")
-                this.Monitor.Log($"Current balance: {Game1.player.Money}. Total earned: {Game1.player.totalMoneyEarned}", LogLevel.Debug);
-        }
-
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            this.Monitor.Log("OnGameLaunched() called", LogLevel.Debug);
+            // this.Monitor.Log("OnGameLaunched() called", LogLevel.Debug);
+
+            // TwitchedATM Menu only makes sense for main farmer
+            if (!Game1.IsMasterGame)
+                return;
 
             var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null) {
@@ -250,7 +246,7 @@ namespace TwitchedATM
             configMenu.AddNumberOption(
                 mod: this.ModManifest,
                 name: () => "Bits to G Conversion Factor",
-                tooltip: () => "G = Bits * Conversion Factor",
+                tooltip: () => "G equals Bits times Conversion Factor",
                 getValue: () => Convert.ToSingle(config.ConversionFactor),
                 setValue: value => config.ConversionFactor = Convert.ToDouble(value),
                 min: 1.0f,
@@ -259,7 +255,7 @@ namespace TwitchedATM
 
             configMenu.AddNumberOption(
                 mod: this.ModManifest,
-                name: () => "Deposit Interest Rate",
+                name: () => "Deposit Interest Rate (in %)",
                 tooltip: () => "How much interest to get from deposits (in %)",
                 getValue: () => Convert.ToSingle(config.DepositInterestRate * 100.0),
                 setValue: value => config.DepositInterestRate = Convert.ToDouble(value) * 0.01,
@@ -269,7 +265,7 @@ namespace TwitchedATM
 
             configMenu.AddNumberOption(
                 mod: this.ModManifest,
-                name: () => "Credit Interest Rate",
+                name: () => "Credit Interest Rate (in %)",
                 tooltip: () => "How much interest to pay for loans (in %) [Not yet implemented]",
                 getValue: () => Convert.ToSingle(config.CreditInterestRate * 100.0),
                 setValue: value => config.CreditInterestRate = Convert.ToDouble(value) * 0.01,
@@ -281,6 +277,10 @@ namespace TwitchedATM
 
         private void OnNewDay(object sender, DayEndingEventArgs e)
         {
+            // ATM daily maintenance only makes sense for main farmer
+            if (!Game1.IsMasterGame)
+                return;
+
             // compute and add/subtract interests for the day
             account.OnNewDay();
 
@@ -440,25 +440,28 @@ namespace TwitchedATM
         /// <summary>Withdraw ALL money from account and add it to player's money.</summary>
         /// <param name="command"></param>
         /// <param name="args"></param>
-        public void CommandWithdraw(string command, string[] args) {
-            ATMToGame();
-        }
+        
+        // public void CommandWithdraw(string command, string[] args) {
+        //     ATMToGame();
+        // }
 
         /// <summary>Display current account activity on SMAPI console.</summary>
         /// <param name="command"></param>
         /// <param name="args"></param>
-        private void CommandCurrentActivity(string command, string[] args)
-        {
-            this.Monitor.Log($"{account.CurrentActivity()}", LogLevel.Debug);
-        }
+        
+        // private void CommandCurrentActivity(string command, string[] args)
+        // {
+        //     this.Monitor.Log($"{account.CurrentActivity()}", LogLevel.Debug);
+        // }
 
         /// <summary>Display total (summed) account activity on SMAPI console.</summary>
         /// <param name="command"></param>
         /// <param name="args"></param>
-        private void CommandTotalActivity(string command, string[] args)
-        {
-            this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
-        }
+        
+        // private void CommandTotalActivity(string command, string[] args)
+        // {
+        //     this.Monitor.Log($"{account.TotalActivity()}", LogLevel.Debug);
+        // }
 
         private void CommandSaveState(string  command, string[] args)
         {

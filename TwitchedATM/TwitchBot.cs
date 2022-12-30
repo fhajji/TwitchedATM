@@ -1,7 +1,5 @@
 ﻿using StardewValley;
 using System;
-// using System.Text.Json;
-// using System.Text.Json.Serialization;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;

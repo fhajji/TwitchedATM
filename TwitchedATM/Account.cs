@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using StardewValley;
 
 namespace TwitchedATM
 {
@@ -59,7 +58,7 @@ namespace TwitchedATM
                                        orderby kv.Value descending
                                        select kv).ToList();
 
-            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
+            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, Math.Abs(config.LeaderboardMaxNumEntries)));
 
             bool firstEntry = true;
             string strOut = "[";
@@ -82,7 +81,7 @@ namespace TwitchedATM
                                        orderby kv.Value descending
                                        select kv).ToList();
 
-            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
+            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, Math.Abs(config.LeaderboardMaxNumEntries)));
 
             bool firstEntry = true;
             string strOut = "[";

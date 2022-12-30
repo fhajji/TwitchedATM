@@ -19,7 +19,9 @@ namespace TwitchedATM
         public double ConversionFactor { get; set; } = 10.0; // in-game-Gs = bits*ConversionFactor
 
         public int MinimumBitsToDisplayInGame { get; set; } = 100;
- 
+
+        public int LeaderboardMaxNumEntries { get; } = 20; // maximum number of entries to show in leaderboard
+
         public string WITHDRAWALS { get; } = "WITHDRAWALS";
         public string INTERESTS { get; } = "INTERESTS";
         public string SELF { get; } = "__SELF__"; // Key appearing in Ledger, when main farmer honestly deposits
