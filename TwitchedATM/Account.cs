@@ -64,9 +64,13 @@ namespace TwitchedATM
 
             var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
 
-            var opt = new JsonSerializerOptions() { WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(leaderBoard, opt);
-            return strJson;
+            string strOut = "[";
+            foreach (var kv in leaderBoard)
+            {
+                strOut += kv.Key + ": " + kv.Value + ", \n";
+            }
+            strOut += "]";
+            return strOut;
         }
 
         public string TotalActivity()
@@ -78,9 +82,13 @@ namespace TwitchedATM
 
             var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
 
-            var opt = new JsonSerializerOptions { WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(leaderBoard, opt);
-            return strJson;
+            string strOut = "[";
+            foreach (var kv in leaderBoard)
+            {
+                strOut += kv.Key + ": " + kv.Value + ", \n";
+            }
+            strOut += "]";
+            return strOut;
         }
 
         /// <summary>Current account balance, based on Ledger.</summary>
