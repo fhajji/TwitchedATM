@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using StardewValley;
@@ -55,15 +57,29 @@ namespace TwitchedATM
 
         public string CurrentActivity()
         {
-            var opt = new JsonSerializerOptions() {  WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(state.Ledger, opt);
+            // Sorting by values, see: https://code-maze.com/sort-dictionary-by-value-dotnet/
+            var sortedKeyValuePairs = (from kv in state.Ledger
+                                       orderby kv.Value descending
+                                       select kv).ToList();
+
+            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
+
+            var opt = new JsonSerializerOptions() { WriteIndented = true };
+            string strJson = JsonSerializer.Serialize(leaderBoard, opt);
             return strJson;
         }
 
         public string TotalActivity()
         {
+            // Sorting by values, see: https://code-maze.com/sort-dictionary-by-value-dotnet/
+            var sortedKeyValuePairs = (from kv in state.PermanentLedger
+                                       orderby kv.Value descending
+                                       select kv).ToList();
+
+            var leaderBoard = sortedKeyValuePairs.GetRange(0, Math.Min(sortedKeyValuePairs.Count, 10));
+
             var opt = new JsonSerializerOptions { WriteIndented = true };
-            string strJson = JsonSerializer.Serialize(state.PermanentLedger, opt);
+            string strJson = JsonSerializer.Serialize(leaderBoard, opt);
             return strJson;
         }
 
