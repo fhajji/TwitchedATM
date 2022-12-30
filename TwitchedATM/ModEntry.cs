@@ -362,7 +362,9 @@ namespace TwitchedATM
         private void ATMToGame()
         {
             // what we deposited ourselves doesn't count towards totalMoneyEarned!
-            int selfDeposits = accountState.Ledger[config.SELF];
+            int selfDeposits = 0;
+            if (accountState.Ledger.ContainsKey(config.SELF))
+                selfDeposits = accountState.Ledger[config.SELF];
 
             // remove ALL money from account
             int amount = account.Withdraw();
