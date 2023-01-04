@@ -8,10 +8,6 @@
   "MinimumApiVersion": "3.0.0",
   "UdpateKeys": [],
   "Dependencies": [
-    // {
-    //   "UniqueID": "Pathoschild.ContentPatcher",
-    //   "MinimumVersion": "1.19.0"
-    // },
     {
       "UniqueID": "spacechase0.GenericModConfigMenu",
       "MinimumVersion":  "1.10.0"
