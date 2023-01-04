@@ -69,8 +69,8 @@ The menu offers the following options:
 
 * Deposit: deposit some G-money from the farm into the ATM account.
 * Withdraw: withdraw ALL G-money from the ATM account and put it back into the farm.
-* Leaderboard (current): shows top-<N> (N = 20 by default) depositors starting after last withdrawal.
-* Leaderboard (all-time): shows top-<N> (N = 20 by default) depositors since the ATM account was created.
+* Leaderboard (current): shows top-N (N = 20 by default) depositors starting after last withdrawal.
+* Leaderboard (all-time): shows top-N (N = 20 by default) depositors since the ATM account was created.
 
 The Balance is the amount of G-money currently in the ATM. It is the sum of all deposits since last withdrawal, including added daily interests.
 
@@ -92,13 +92,13 @@ This happens behind the scenes without the Player having to invoke the Deposit m
 
 ### Current Leaderboard
 
-* This displays the top-<N> (N = 20 by default) donors with their summed deposits since last withdrawal.
+* This displays the top-N (N = 20 by default) donors with their summed deposits since last withdrawal.
 * Even though only N donors are shown, all bits/cheers are added to the ATM account, even if they are from more than N donors.
 * The special name INTERESTS sums all interest that were added to the ATM account since last withdrawal.
 
 ### All-time Leaderboard
 
-* This displays the all-times top-<N> (N = 20 by default) donors with their summed deposits since the ATM account was created.
+* This displays the all-times top-N (N = 20 by default) donors with their summed deposits since the ATM account was created.
 * Unlike the Current Leaderboard, this leaderboard persists across withdrawals.
 * The special name INTERESTS sums all earned interests since this account was created.
 * The special name WITHDRAWALS sums all Gs that were taken out of this account and back into the farm (as a negative number).
